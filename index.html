@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chat App - Demo</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;margin:0;display:flex;height:100vh}
+    .sidebar{width:320px;border-right:1px solid #ddd;padding:12px;box-sizing:border-box}
+    .main{flex:1;display:flex;flex-direction:column}
+    .user-list{list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto}
+    .user-list li{padding:8px;border-bottom:1px solid #eee;cursor:pointer}
+    .messages{flex:1;padding:12px;overflow:auto;background:#f7f7f7;display:flex;flex-direction:column;gap:8px}
+    .msg{max-width:70%;padding:8px;border-radius:8px}
+    .me{align-self:flex-end;background:#dcf8c6}
+    .them{align-self:flex-start;background:#fff}
+    .composer{display:flex;gap:8px;padding:12px;border-top:1px solid #ddd}
+    input,textarea{padding:8px;border-radius:6px;border:1px solid #ccc}
+    button{padding:8px 12px;border-radius:6px;border:0;background:#2b7cff;color:#fff;cursor:pointer}
+    .top form{display:flex;flex-direction:column;gap:8px}
+    .small{font-size:12px;color:#666}
+    img.preview{max-width:200px;border-radius:6px}
+    video.preview{max-width:300px;border-radius:6px}
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div id="authArea">
+      <h3>تسجيل / دخول</h3>
+      <form id="authForm" onsubmit="return false;">
+        <input id="email" placeholder="الإيميل" />
+        <input id="password" placeholder="كلمة المرور" type="password" />
+        <input id="displayName" placeholder="الاسم الظاهر (اختياري)" />
+        <div style="display:flex;gap:8px">
+          <button id="btnRegister">تسجيل</button>
+          <button id="btnLogin">دخول</button>
+        </div>
+      </form>
+      <div class="small">الحالة: <span id="status">غير متصل</span></div>
+    </div>
+    <hr/>
+    <h4>جهات الاتصال</h4>
+    <ul id="users" class="user-list"></ul>
+  </div>
+
+  <div class="main">
+    <div style="padding:12px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center">
+      <div><strong id="chatWith">اختر مستخدماً</strong></div>
+      <div>مرحباً، <span id="meName">غير مسجل</span></div>
+    </div>
+
+    <div id="messages" class="messages"></div>
+
+    <div class="composer">
+      <input id="textInput" placeholder="اكتب رسالة..." style="flex:1" />
+      <input id="fileInput" type="file" />
+      <button id="sendBtn">إرسال</button>
+    </div>
+  </div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const SERVER_BASE = ''; // same origin when deployed
+let token = localStorage.getItem('token');
+let me = null;
+let socket = null;
+let currentChatId = null;
+
+const status = document.getElementById('status');
+const usersList = document.getElementById('users');
+const messagesDiv = document.getElementById('messages');
+const meName = document.getElementById('meName');
+const chatWith = document.getElementById('chatWith');
+
+function setStatus(s){ status.textContent = s; }
+
+async function api(path, method='GET', body=null){
+  const headers = {'Content-Type':'application/json'};
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  return res.json();
+}
+
+document.getElementById('btnRegister').addEventListener('click', async ()=>{
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const displayName = document.getElementById('displayName').value.trim();
+  if(!email||!password) return alert('ادخل ايميل وكلمة مرور');
+  const res = await api('/api/register','POST',{ email, password, displayName });
+  if(res.error) return alert(res.error);
+  token = res.token; localStorage.setItem('token', token);
+  me = res.user; meName.textContent = me.displayName || me.email;
+  setStatus('متصل');
+  connectSocket(); loadUsers();
+});
+
+document.getElementById('btnLogin').addEventListener('click', async ()=>{
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  if(!email||!password) return alert('ادخل ايميل وكلمة مرور');
+  const res = await api('/api/login','POST',{ email, password });
+  if(res.error) return alert(res.error);
+  token = res.token; localStorage.setItem('token', token);
+  me = res.user; meName.textContent = me.displayName || me.email;
+  setStatus('متصل');
+  connectSocket(); loadUsers();
+});
+
+async function loadUsers(){
+  if(!token) return;
+  const res = await api('/api/users');
+  if(res.error) { console.error(res); return; }
+  usersList.innerHTML = '';
+  res.users.forEach(u=>{
+    const li = document.createElement('li');
+    li.textContent = u.displayName || u.email;
+    li.dataset.id = u._id || u.id;
+    li.addEventListener('click', ()=> openChat(u));
+    usersList.appendChild(li);
+  });
+}
+
+function connectSocket(){
+  if(!token) return;
+  if(socket) socket.disconnect();
+  socket = io('/', { auth: { token } });
+  socket.on('connect', ()=> setStatus('متصل (socket)'));
+  socket.on('disconnect', ()=> setStatus('مفصول'));
+  socket.on('message', (m)=> {
+    // show if relevant
+    if ((m.from && m.from._id==me.id && m.to==currentChatId) || (m.to==me.id && m.from && m.from._id==currentChatId)) {
+      appendMessage(m);
+    } else {
+      // optionally show badge
+    }
+  });
+}
+
+function formatTime(iso){ return new Date(iso).toLocaleTimeString(); }
+
+function appendMessage(m){
+  const el = document.createElement('div');
+  el.className = 'msg ' + (m.from && m.from._id==me.id ? 'me' : 'them');
+  let html = '';
+  if(m.mediaUrl){
+    if(m.mediaType && m.mediaType.startsWith('image')){
+      html += `<div><img class="preview" src="${m.mediaUrl}" /></div>`;
+    } else if (m.mediaType && m.mediaType.startsWith('video')){
+      html += `<div><video class="preview" controls src="${m.mediaUrl}"></video></div>`;
+    }
+  }
+  if(m.text) html += `<div>${escapeHtml(m.text)}</div>`;
+  html += `<div class="small">${formatTime(m.createdAt)}</div>`;
+  el.innerHTML = html;
+  messagesDiv.appendChild(el);
+  messagesDiv.scrollTop = messagesDiv.scrollHeight;
+}
+
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[m]}); }
+
+async function openChat(u){
+  currentChatId = u._id || u.id;
+  chatWith.textContent = u.displayName || u.email;
+  messagesDiv.innerHTML = '<small>جاري تحميل الرسائل...</small>';
+  const res = await api('/api/messages?with=' + currentChatId);
+  if(res.error) { messagesDiv.innerHTML = 'خطأ'; return; }
+  messagesDiv.innerHTML = '';
+  res.messages.forEach(m => appendMessage(m));
+}
+
+document.getElementById('sendBtn').addEventListener('click', sendMessage);
+document.getElementById('textInput').addEventListener('keydown', (e)=> { if(e.key==='Enter') sendMessage(); });
+
+async function sendMessage(){
+  const text = document.getElementById('textInput').value.trim();
+  const fileInput = document.getElementById('fileInput');
+  if(!currentChatId) return alert('اختر مستخدماً');
+  if(fileInput.files.length>0){
+    // upload file first
+    const f = fileInput.files[0];
+    const fd = new FormData();
+    fd.append('file', f);
+    const res = await fetch('/api/upload', { method:'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd });
+    const data = await res.json();
+    if(data.error) return alert('خطأ رفع الملف: ' + data.error);
+    const payload = { to: currentChatId, text: text || '', mediaUrl: data.url, mediaType: data.mimetype };
+    socket.emit('private_message', payload);
+    document.getElementById('fileInput').value = '';
+    document.getElementById('textInput').value = '';
+  } else {
+    if(!text) return;
+    socket.emit('private_message', { to: currentChatId, text });
+    document.getElementById('textInput').value = '';
+  }
+}
+
+// try restore session
+(async function init(){
+  if(token){
+    try{
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      me = { id: payload.id, email: payload.email, displayName: payload.displayName };
+      meName.textContent = me.displayName || me.email;
+      setStatus('متصل (توكن موجود)');
+      connectSocket(); loadUsers();
+    }catch(e){
+      localStorage.removeItem('token'); token=null; setStatus('غير متصل');
+    }
+  } else {
+    setStatus('غير متصل');
+  }
+})();
+</script>
+</body>
+</html>
